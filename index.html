@@ -6,90 +6,179 @@
     <title>MS Word Quiz Portal</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
+        /* --- GEN Z NEON THEME --- */
         :root {
-            /* Word Blue Theme */
-            --primary: #2b579a; 
-            --accent: #487fd9;
-            --glass: rgba(255, 255, 255, 0.95);
-            --text: #2d3436;
-            --success: #6ab04c;
-            --error: #eb4d4b;
+            --bg-dark: #0a0a12;
+            --primary-neon: #00fff2; /* Cyan Neon */
+            --accent-neon: #bc13fe;  /* Purple Neon */
+            --text-glow: 0 0 10px rgba(0, 255, 242, 0.7);
+            --glass-dark: rgba(20, 20, 35, 0.85);
+            --text: #ffffff;
+            --text-muted: #a0a0b0;
+            /* Ultra bright neon for correct/wrong */
+            --success-neon: #39ff14; 
+            --error-neon: #ff073a;
         }
 
         body {
             margin: 0; font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            /* Dark background with subtle neon gradient bleeds */
+            background: radial-gradient(circle at top left, rgba(188, 19, 254, 0.3), transparent 40%),
+                        radial-gradient(circle at bottom right, rgba(0, 255, 242, 0.3), transparent 40%),
+                        var(--bg-dark);
             min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            padding: 20px;
+            padding: 20px; color: var(--text);
         }
 
         .app-container {
             width: 100%; max-width: 600px;
-            background: var(--glass);
+            /* Dark Glassmorphism */
+            background: var(--glass-dark);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             border-radius: 24px; padding: 40px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
             text-align: center; position: relative;
             overflow: hidden;
+            /* Neon border and shadow glow */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(0, 255, 242, 0.2), inset 0 0 20px rgba(188, 19, 254, 0.2);
         }
 
-        h1 { margin: 0 0 10px; color: var(--primary); font-weight: 800; text-transform: uppercase; }
-        p { color: #636e72; font-size: 14px; margin-bottom: 30px; }
+        /* LOGO STYLING */
+        .login-logo {
+            max-width: 180px;
+            height: auto;
+            margin-bottom: 25px;
+            /* Subtle glowing drop shadow on the logo */
+            filter: drop-shadow(0 0 8px var(--accent-neon));
+        }
 
+        h1 { 
+            margin: 0 0 10px; 
+            color: var(--primary-neon); 
+            font-weight: 800; 
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            /* Glowing text effect */
+            text-shadow: var(--text-glow);
+        }
+        p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; font-weight: 500; }
+
+        /* --- Modern Inputs --- */
         input, select {
             width: 100%; padding: 15px; margin-bottom: 15px;
-            border: 2px solid #dfe6e9; border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
             font-family: inherit; font-weight: 600; box-sizing: border-box;
-            outline: none; transition: 0.3s;
+            outline: none; transition: all 0.3s ease;
+            color: var(--text);
         }
-        input:focus, select:focus { border-color: var(--primary); }
+        input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        select { color: var(--text); }
+        option { background: var(--bg-dark); } /* Fix for dark mode selects */
 
+        input:focus, select:focus { 
+            border-color: var(--primary-neon); 
+            box-shadow: 0 0 20px rgba(0, 255, 242, 0.4);
+            background: rgba(0, 255, 242, 0.05);
+        }
+
+        /* --- Neon Buttons --- */
         .btn {
-            width: 100%; padding: 16px; background: var(--primary);
-            color: white; border: none; border-radius: 12px;
-            font-weight: 800; font-size: 16px; cursor: pointer;
-            transition: transform 0.1s; text-transform: uppercase;
+            width: 100%; padding: 16px; 
+            /* Neon gradient background */
+            background: linear-gradient(135deg, var(--accent-neon), var(--primary-neon));
+            color: #000; /* Dark text for contrast against bright neon */
+            border: none; border-radius: 12px;
+            font-weight: 900; font-size: 16px; cursor: pointer;
+            transition: all 0.3s ease; text-transform: uppercase;
+            box-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
+            position: relative; overflow: hidden;
+        }
+        .btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 0 30px rgba(0, 255, 242, 0.8), 0 0 10px rgba(188, 19, 254, 1);
         }
         .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #b2bec3; cursor: not-allowed; }
+        .btn:disabled { background: #555; color: #999; box-shadow: none; cursor: not-allowed; }
 
         .hidden { display: none; }
 
-        /* Quiz Styles */
+        /* --- Quiz Styles --- */
         .option-btn {
-            background: white; border: 2px solid #dfe6e9; color: var(--text);
-            padding: 15px; margin-bottom: 10px; width: 100%; text-align: left;
-            border-radius: 12px; cursor: pointer; font-weight: 600; transition: 0.2s;
+            background: rgba(255, 255, 255, 0.05); 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            padding: 15px; margin-bottom: 12px; width: 100%; text-align: left;
+            border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s;
         }
-        .option-btn:hover { border-color: var(--primary); background: #f1f2f6; }
-        .correct { background: #badc58 !important; border-color: var(--success) !important; color: #136a23; }
-        .wrong { background: #ffbe76 !important; border-color: var(--error) !important; color: #c23616; }
+        .option-btn:hover { 
+            border-color: var(--accent-neon); 
+            background: rgba(188, 19, 254, 0.1);
+            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
+        }
+        /* Intense Neon Correct/Wrong states */
+        .correct { 
+            background: rgba(57, 255, 20, 0.2) !important; 
+            border-color: var(--success-neon) !important; 
+            color: var(--success-neon) !important; 
+            box-shadow: 0 0 20px var(--success-neon) !important;
+        }
+        .wrong { 
+            background: rgba(255, 7, 58, 0.2) !important; 
+            border-color: var(--error-neon) !important; 
+            color: var(--error-neon) !important; 
+            box-shadow: 0 0 20px var(--error-neon) !important;
+        }
 
-        /* Loading */
+        /* Loading Spinner */
         .loader {
-            width: 50px; height: 50px; border: 5px solid #dfe6e9;
-            border-top: 5px solid var(--primary); border-radius: 50%;
-            animation: spin 1s linear infinite; margin: 20px auto;
+            width: 60px; height: 60px; 
+            border: 6px solid rgba(255, 255, 255, 0.1);
+            border-top: 6px solid var(--primary-neon);
+            border-right: 6px solid var(--accent-neon);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite; margin: 30px auto;
+            box-shadow: 0 0 20px var(--primary-neon);
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         /* Topic Grid */
         .chapter-grid {
-            display: grid; grid-template-columns: 1fr; gap: 10px;
-            text-align: left; margin-bottom: 20px;
-            max-height: 300px; overflow-y: auto;
+            display: grid; grid-template-columns: 1fr; gap: 12px;
+            text-align: left; margin-bottom: 30px;
+            max-height: 350px; overflow-y: auto;
             padding-right: 5px;
         }
+        /* Custom Scrollbar for neon look */
+        .chapter-grid::-webkit-scrollbar { width: 8px; }
+        .chapter-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
+        .chapter-grid::-webkit-scrollbar-thumb { background: var(--accent-neon); border-radius: 10px; }
+
         @media (min-width: 500px) {
             .chapter-grid { grid-template-columns: 1fr 1fr; }
         }
 
         .chapter-btn {
-            background: white; border: 2px solid #dfe6e9; padding: 15px;
+            background: rgba(255, 255, 255, 0.05); 
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            color: var(--text);
+            padding: 15px;
             border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;
             display: flex; align-items: center; justify-content: space-between;
+            transition: 0.3s;
         }
-        .chapter-btn:hover { border-color: var(--primary); }
-        .chapter-btn.selected { background: var(--primary); color: white; border-color: var(--primary); }
+        .chapter-btn:hover { 
+            border-color: var(--primary-neon);
+            box-shadow: 0 0 15px rgba(0, 255, 242, 0.4);
+        }
+        .chapter-btn.selected { 
+            background: linear-gradient(135deg, var(--accent-neon), var(--primary-neon));
+            color: #000; 
+            border-color: transparent;
+            box-shadow: 0 0 20px rgba(0, 255, 242, 0.6);
+        }
 
     </style>
 </head>
@@ -98,43 +187,45 @@
     <div class="app-container">
         
         <div id="screen-login">
-            <h1 style="font-size: 28px;">MS Word Quiz 📝</h1>
-            <p>Enter your details to start the practice session.</p>
+            <img src="logo.png" alt="Quiz Portal Logo" class="login-logo">
+            
+            <h1 style="font-size: 32px;">MS Word Quiz</h1>
+            <p>Enter your details to enter the neon realm.</p>
             <input type="text" id="inp-name" placeholder="Full Name">
             <input type="tel" id="inp-phone" placeholder="Phone Number" maxlength="10">
-            <button class="btn" onclick="goToChapters()">Next ➝</button>
+            <button class="btn" onclick="goToChapters()">Enter ➝</button>
         </div>
 
         <div id="screen-chapters" class="hidden">
             <h1>Select Topic</h1>
-            <p>Choose a topic to generate a quiz.</p>
+            <p>Choose a module to generate a quiz.</p>
             <div class="chapter-grid" id="chapter-list"></div>
-            <button class="btn" id="start-quiz-btn" onclick="startQuiz()" disabled>Start AI Quiz ⚡</button>
+            <button class="btn" id="start-quiz-btn" onclick="startQuiz()" disabled>Initiate AI Quiz ⚡</button>
         </div>
 
         <div id="screen-loading" class="hidden">
-            <h1>Generating...</h1>
+            <h1 style="text-shadow: none; color: var(--text);">Generating...</h1>
             <div class="loader"></div>
-            <p>AI is creating 20 unique questions about <br><b id="loading-topic">Topic</b>.</p>
+            <p>AI is synthesizing 20 unique questions about <br><b style="color:var(--primary-neon)" id="loading-topic">Topic</b>.</p>
         </div>
 
         <div id="screen-quiz" class="hidden">
-            <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:10px; color:#b2bec3;">
+            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:15px; color:var(--text-muted);">
                 <span id="q-progress">1 / 20</span>
-                <span>Score: <span id="live-score">0</span></span>
+                <span>Score: <span style="color:var(--primary-neon)" id="live-score">0</span></span>
             </div>
-            <h2 id="q-text" style="font-size:18px; margin-bottom:20px;">Question text...</h2>
+            <h2 id="q-text" style="font-size:20px; margin-bottom:25px; font-weight: 600;">Question text...</h2>
             <div id="options-container"></div>
             <button id="next-btn" class="btn hidden" style="margin-top:20px;" onclick="nextQuestion()">Next Question ➝</button>
         </div>
 
         <div id="screen-result" class="hidden">
             <h1>Quiz Complete!</h1>
-            <div style="font-size:60px; margin:20px 0;">💾</div>
-            <p>Your score has been saved to the database.</p>
-            <h2 style="font-size:40px; color:var(--primary); margin:0;"><span id="final-score">0</span>/20</h2>
+            <div style="font-size:70px; margin:20px 0; text-shadow: 0 0 20px var(--accent-neon);">💾</div>
+            <p>Your score has been linked to the database.</p>
+            <h2 style="font-size:50px; color:var(--primary-neon); margin:0; text-shadow: var(--text-glow);"><span id="final-score">0</span>/20</h2>
             <p style="margin-top:5px;">Total Marks</p>
-            <button class="btn" onclick="location.reload()">Take Another Quiz</button>
+            <button class="btn" style="margin-top: 20px;" onclick="location.reload()">Take Another Quiz</button>
         </div>
 
     </div>
