@@ -22,7 +22,6 @@
             margin: 0;
             font-family: 'Outfit', sans-serif;
             background-color: var(--bg-dark);
-            /* Animated Mesh Gradient Background */
             background-image: 
                 radial-gradient(at 0% 0%, rgba(125, 42, 232, 0.3) 0px, transparent 50%),
                 radial-gradient(at 100% 0%, rgba(0, 242, 234, 0.3) 0px, transparent 50%),
@@ -31,6 +30,7 @@
             animation: gradientMove 15s ease infinite;
             min-height: 100vh;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
@@ -58,16 +58,18 @@
             position: relative;
             overflow: hidden;
             transition: height 0.3s ease;
+            z-index: 10;
         }
 
-        /* Logo Glow */
+        /* --- LOGO STYLING --- */
         .login-logo {
-            width: 140px;
-            margin-bottom: 20px;
+            width: 440px; /* 100% Bigger */
+            max-width: 100%; /* Mobile safety */
+            margin-bottom: 25px;
             filter: drop-shadow(0 0 15px rgba(0, 242, 234, 0.4));
             transition: transform 0.5s;
         }
-        .login-logo:hover { transform: scale(1.05) rotate(2deg); }
+        .login-logo:hover { transform: scale(1.02) rotate(1deg); }
 
         h1 {
             font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
@@ -126,7 +128,6 @@
             display: grid; grid-template-columns: 1fr; gap: 12px;
             max-height: 350px; overflow-y: auto; padding: 5px;
         }
-        /* Custom Scrollbar */
         .chapter-grid::-webkit-scrollbar { width: 6px; }
         .chapter-grid::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
 
@@ -186,6 +187,23 @@
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .hidden { display: none; }
+
+        /* --- FOOTER --- */
+        .dev-footer {
+            position: fixed;
+            bottom: 15px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.4);
+            letter-spacing: 1px;
+            font-weight: 600;
+            text-transform: uppercase;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+        
+        .logout-link {
+            font-size: 12px; color: var(--text-muted); text-decoration: underline; cursor: pointer; margin-top: 15px; display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -195,24 +213,32 @@
         <div id="screen-login">
             <img src="logo.png" alt="Logo" class="login-logo">
             <h1>MS Word Quiz Portal</h1>
-            <p>Access the portal to begin your assessment.</p>
             
-            <input type="text" id="inp-name" placeholder="Full Name">
-            <input type="tel" id="inp-phone" placeholder="Phone Number" maxlength="10">
-            <button class="btn" onclick="goToChapters()">Enter Portal ➝</button>
+            <div id="login-form">
+                <p>Access the portal to begin your assessment.</p>
+                <input type="text" id="inp-name" placeholder="Full Name">
+                <input type="tel" id="inp-phone" placeholder="Phone Number" maxlength="10">
+                <button class="btn" onclick="loginAndStart()">Enter Portal ➝</button>
+            </div>
+
+            <div id="welcome-back" class="hidden">
+                <p style="font-size: 18px; color: white;">Hello, <b style="color:var(--primary)" id="user-name-display">Student</b>!</p>
+                <button class="btn" onclick="startSession()">Begin Quiz ➝</button>
+                <span class="logout-link" onclick="logout()">Not you? Logout</span>
+            </div>
         </div>
 
         <div id="screen-chapters" class="hidden">
             <h1>Select Module</h1>
-            <p>Choose a topic to generate the quiz.</p>
+            <p>Choose a topic to generate an AI quiz.</p>
             <div class="chapter-grid" id="chapter-list"></div>
-            <button class="btn" id="start-quiz-btn" style="margin-top:20px;" onclick="startQuiz()" disabled>Generate Quiz ⚡</button>
+            <button class="btn" id="start-quiz-btn" style="margin-top:20px;" onclick="startQuiz()" disabled>Begin Quiz ⚡</button>
         </div>
 
         <div id="screen-loading" class="hidden">
             <h1 class="pulse">Processing...</h1>
             <div class="loader"></div>
-            <p>20 Questions are getting generated.<br><b style="color:var(--primary)" id="loading-topic">...</b></p>
+            <p>AI is generating 20 questions on<br><b style="color:var(--primary)" id="loading-topic">...</b></p>
         </div>
 
         <div id="screen-quiz" class="hidden">
@@ -240,21 +266,19 @@
                 <h2 style="font-size:56px; color:var(--primary); margin:0; line-height:1;"><span id="final-score">0</span><span style="font-size:20px; color:var(--text-muted)">/20</span></h2>
             </div>
 
-            <button class="btn" onclick="location.reload()">Return to Home</button>
+            <button class="btn" onclick="returnToChapters()">Return to Topics</button>
         </div>
 
     </div>
 
+    <div class="dev-footer">Developed by ICM Educations</div>
+
 <script>
     // ---------------- CONFIGURATION ---------------- //
     
-    // ✅ YOUR GOOGLE SCRIPT URL
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyGk79tReDKSBGzXK572mQhKhkS84rL0HGj6ioBk_m6mb8G7vfS1Lc_OGPVgckQ-q-eyg/exec"; 
-
-    // ✅ YOUR API KEY
     const API_KEY = "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"; 
 
-    // TOPICS
     const chapters = [
         "1. Introduction to Word Processing",
         "2. MS Word Interface",
@@ -277,8 +301,31 @@
 
     // ---------------- LOGIC ---------------- //
 
-    // 1. LOGIN
-    function goToChapters() {
+    // 1. INITIAL LOAD & CHECK LOGIN
+    window.onload = function() {
+        const savedData = localStorage.getItem('ms_word_quiz_user');
+        if (savedData) {
+            userDetails = JSON.parse(savedData);
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('welcome-back').classList.remove('hidden');
+            document.getElementById('user-name-display').innerText = userDetails.name;
+        }
+    };
+
+    function startSession() {
+        renderChapters();
+        switchScreen('screen-chapters');
+    }
+
+    function logout() {
+        if(confirm("Are you sure you want to logout?")) {
+            localStorage.removeItem('ms_word_quiz_user');
+            location.reload();
+        }
+    }
+
+    // Called by "Enter Portal" button (New User)
+    function loginAndStart() {
         const name = document.getElementById('inp-name').value;
         const phone = document.getElementById('inp-phone').value;
 
@@ -287,6 +334,13 @@
         userDetails.name = name;
         userDetails.phone = phone;
 
+        // Save to Local Storage
+        localStorage.setItem('ms_word_quiz_user', JSON.stringify({name: name, phone: phone}));
+
+        startSession();
+    }
+
+    function renderChapters() {
         const grid = document.getElementById('chapter-list');
         grid.innerHTML = "";
         chapters.forEach(chap => {
@@ -296,8 +350,6 @@
             btn.onclick = () => selectChapter(btn, chap);
             grid.appendChild(btn);
         });
-
-        switchScreen('screen-chapters');
     }
 
     function selectChapter(btn, chapName) {
@@ -340,7 +392,9 @@
             questions = JSON.parse(rawContent);
             
             if(questions.length > 0) {
-                currentQIndex = 0; score = 0;
+                // Reset quiz state
+                currentQIndex = 0; 
+                score = 0;
                 loadQuestion();
                 switchScreen('screen-quiz');
             } else { throw new Error("Empty list"); }
@@ -406,7 +460,7 @@
     function submitScore() {
         switchScreen('screen-loading');
         document.querySelector('#screen-loading h1').innerText = "Finalizing...";
-        document.querySelector('#screen-loading p').innerText = "Saving your victory.";
+        document.querySelector('#screen-loading p').innerText = "Saving your progress.";
 
         const payload = {
             name: userDetails.name,
@@ -431,6 +485,21 @@
         switchScreen('screen-result');
         // Trigger Confetti
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+
+    // 5. RETURN TO CHAPTERS (No Reload)
+    function returnToChapters() {
+        // Reset local variables for a fresh start
+        score = 0;
+        currentQIndex = 0;
+        questions = [];
+        
+        // Go back to chapter screen
+        switchScreen('screen-chapters');
+        
+        // Disable "Begin Quiz" button until they pick a new topic
+        document.getElementById('start-quiz-btn').disabled = true;
+        document.querySelectorAll('.chapter-btn').forEach(b => b.classList.remove('selected'));
     }
 
     function switchScreen(id) {
