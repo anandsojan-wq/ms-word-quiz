@@ -3,183 +3,189 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MS Word Quiz Portal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>MS Word Quiz</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        /* --- GEN Z NEON THEME --- */
         :root {
-            --bg-dark: #0a0a12;
-            --primary-neon: #00fff2; /* Cyan Neon */
-            --accent-neon: #bc13fe;  /* Purple Neon */
-            --text-glow: 0 0 10px rgba(0, 255, 242, 0.7);
-            --glass-dark: rgba(20, 20, 35, 0.85);
+            --bg-dark: #050505;
+            --primary: #00f2ea;
+            --secondary: #ff0050;
+            --accent: #7d2ae8;
+            --glass: rgba(20, 20, 30, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
             --text: #ffffff;
-            --text-muted: #a0a0b0;
-            /* Ultra bright neon for correct/wrong */
-            --success-neon: #39ff14; 
-            --error-neon: #ff073a;
+            --text-muted: #8b9bb4;
         }
 
         body {
-            margin: 0; font-family: 'Poppins', sans-serif;
-            /* Dark background with subtle neon gradient bleeds */
-            background: radial-gradient(circle at top left, rgba(188, 19, 254, 0.3), transparent 40%),
-                        radial-gradient(circle at bottom right, rgba(0, 255, 242, 0.3), transparent 40%),
-                        var(--bg-dark);
-            min-height: 100vh; display: flex; align-items: center; justify-content: center;
-            padding: 20px; color: var(--text);
+            margin: 0;
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            /* Animated Mesh Gradient Background */
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(125, 42, 232, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 0%, rgba(0, 242, 234, 0.3) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(255, 0, 80, 0.3) 0px, transparent 50%);
+            background-size: 150% 150%;
+            animation: gradientMove 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--text);
+            overflow-x: hidden;
         }
 
+        @keyframes gradientMove {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* --- CONTAINER --- */
         .app-container {
-            width: 100%; max-width: 600px;
-            /* Dark Glassmorphism */
-            background: var(--glass-dark);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px; padding: 40px;
-            text-align: center; position: relative;
+            width: 100%; max-width: 550px;
+            background: var(--glass);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
             overflow: hidden;
-            /* Neon border and shadow glow */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 0 30px rgba(0, 255, 242, 0.2), inset 0 0 20px rgba(188, 19, 254, 0.2);
+            transition: height 0.3s ease;
         }
 
-        /* LOGO STYLING */
+        /* Logo Glow */
         .login-logo {
-            max-width: 180px;
-            height: auto;
-            margin-bottom: 25px;
-            /* Subtle glowing drop shadow on the logo */
-            filter: drop-shadow(0 0 8px var(--accent-neon));
+            width: 140px;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 15px rgba(0, 242, 234, 0.4));
+            transition: transform 0.5s;
         }
+        .login-logo:hover { transform: scale(1.05) rotate(2deg); }
 
-        h1 { 
-            margin: 0 0 10px; 
-            color: var(--primary-neon); 
-            font-weight: 800; 
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            /* Glowing text effect */
-            text-shadow: var(--text-glow);
+        h1 {
+            font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;
+            background: linear-gradient(to right, #fff, #a5a5a5);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
         p { color: var(--text-muted); font-size: 14px; margin-bottom: 30px; font-weight: 500; }
 
-        /* --- Modern Inputs --- */
-        input, select {
-            width: 100%; padding: 15px; margin-bottom: 15px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            font-family: inherit; font-weight: 600; box-sizing: border-box;
-            outline: none; transition: all 0.3s ease;
-            color: var(--text);
-        }
-        input::placeholder { color: rgba(255, 255, 255, 0.4); }
-        select { color: var(--text); }
-        option { background: var(--bg-dark); } /* Fix for dark mode selects */
-
-        input:focus, select:focus { 
-            border-color: var(--primary-neon); 
-            box-shadow: 0 0 20px rgba(0, 255, 242, 0.4);
-            background: rgba(0, 255, 242, 0.05);
-        }
-
-        /* --- Neon Buttons --- */
-        .btn {
-            width: 100%; padding: 16px; 
-            /* Neon gradient background */
-            background: linear-gradient(135deg, var(--accent-neon), var(--primary-neon));
-            color: #000; /* Dark text for contrast against bright neon */
-            border: none; border-radius: 12px;
-            font-weight: 900; font-size: 16px; cursor: pointer;
-            transition: all 0.3s ease; text-transform: uppercase;
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.5);
-            position: relative; overflow: hidden;
-        }
-        .btn:hover { 
-            transform: translateY(-3px); 
-            box-shadow: 0 0 30px rgba(0, 255, 242, 0.8), 0 0 10px rgba(188, 19, 254, 1);
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn:disabled { background: #555; color: #999; box-shadow: none; cursor: not-allowed; }
-
-        .hidden { display: none; }
-
-        /* --- Quiz Styles --- */
-        .option-btn {
-            background: rgba(255, 255, 255, 0.05); 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            color: var(--text);
-            padding: 15px; margin-bottom: 12px; width: 100%; text-align: left;
-            border-radius: 12px; cursor: pointer; font-weight: 600; transition: all 0.3s;
-        }
-        .option-btn:hover { 
-            border-color: var(--accent-neon); 
-            background: rgba(188, 19, 254, 0.1);
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.3);
-        }
-        /* Intense Neon Correct/Wrong states */
-        .correct { 
-            background: rgba(57, 255, 20, 0.2) !important; 
-            border-color: var(--success-neon) !important; 
-            color: var(--success-neon) !important; 
-            box-shadow: 0 0 20px var(--success-neon) !important;
-        }
-        .wrong { 
-            background: rgba(255, 7, 58, 0.2) !important; 
-            border-color: var(--error-neon) !important; 
-            color: var(--error-neon) !important; 
-            box-shadow: 0 0 20px var(--error-neon) !important;
-        }
-
-        /* Loading Spinner */
-        .loader {
-            width: 60px; height: 60px; 
-            border: 6px solid rgba(255, 255, 255, 0.1);
-            border-top: 6px solid var(--primary-neon);
-            border-right: 6px solid var(--accent-neon);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite; margin: 30px auto;
-            box-shadow: 0 0 20px var(--primary-neon);
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-
-        /* Topic Grid */
-        .chapter-grid {
-            display: grid; grid-template-columns: 1fr; gap: 12px;
-            text-align: left; margin-bottom: 30px;
-            max-height: 350px; overflow-y: auto;
-            padding-right: 5px;
-        }
-        /* Custom Scrollbar for neon look */
-        .chapter-grid::-webkit-scrollbar { width: 8px; }
-        .chapter-grid::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 10px; }
-        .chapter-grid::-webkit-scrollbar-thumb { background: var(--accent-neon); border-radius: 10px; }
-
-        @media (min-width: 500px) {
-            .chapter-grid { grid-template-columns: 1fr 1fr; }
-        }
-
-        .chapter-btn {
-            background: rgba(255, 255, 255, 0.05); 
-            border: 2px solid rgba(255, 255, 255, 0.1);
-            color: var(--text);
-            padding: 15px;
-            border-radius: 12px; font-size: 13px; font-weight: 700; cursor: pointer;
-            display: flex; align-items: center; justify-content: space-between;
+        /* --- INPUTS --- */
+        input {
+            width: 100%; padding: 16px; margin-bottom: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            color: white; font-family: inherit; font-weight: 600;
+            box-sizing: border-box; outline: none;
             transition: 0.3s;
         }
-        .chapter-btn:hover { 
-            border-color: var(--primary-neon);
-            box-shadow: 0 0 15px rgba(0, 255, 242, 0.4);
-        }
-        .chapter-btn.selected { 
-            background: linear-gradient(135deg, var(--accent-neon), var(--primary-neon));
-            color: #000; 
-            border-color: transparent;
-            box-shadow: 0 0 20px rgba(0, 255, 242, 0.6);
+        input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.2);
+            background: rgba(0, 0, 0, 0.5);
         }
 
+        /* --- NEON BUTTONS --- */
+        .btn {
+            width: 100%; padding: 18px;
+            background: linear-gradient(90deg, var(--accent), var(--secondary));
+            border: none; border-radius: 16px;
+            color: white; font-weight: 800; font-size: 16px;
+            text-transform: uppercase; letter-spacing: 1px;
+            cursor: pointer; position: relative; overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 10px 30px rgba(125, 42, 232, 0.3);
+        }
+        .btn:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(125, 42, 232, 0.5);
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn:disabled { filter: grayscale(1); opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        /* --- PROGRESS BAR --- */
+        .progress-track {
+            width: 100%; height: 6px; background: rgba(255,255,255,0.1);
+            border-radius: 10px; margin-bottom: 25px; overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%; width: 0%; background: var(--primary);
+            border-radius: 10px; transition: width 0.5s ease;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* --- TOPIC CARDS --- */
+        .chapter-grid {
+            display: grid; grid-template-columns: 1fr; gap: 12px;
+            max-height: 350px; overflow-y: auto; padding: 5px;
+        }
+        /* Custom Scrollbar */
+        .chapter-grid::-webkit-scrollbar { width: 6px; }
+        .chapter-grid::-webkit-scrollbar-thumb { background: var(--glass-border); border-radius: 10px; }
+
+        @media(min-width: 500px) { .chapter-grid { grid-template-columns: 1fr 1fr; } }
+
+        .chapter-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            padding: 15px; border-radius: 16px;
+            font-size: 13px; font-weight: 700; text-align: left;
+            cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .chapter-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: var(--primary);
+            transform: translateX(5px);
+        }
+        .chapter-btn.selected {
+            background: linear-gradient(45deg, var(--primary), #00a8a3);
+            border-color: transparent;
+            color: #000;
+            box-shadow: 0 5px 20px rgba(0, 242, 234, 0.3);
+        }
+
+        /* --- QUIZ OPTIONS --- */
+        .option-btn {
+            width: 100%; padding: 16px; margin-bottom: 12px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px; color: var(--text);
+            text-align: left; font-weight: 600; cursor: pointer;
+            transition: all 0.2s; font-size: 15px;
+        }
+        .option-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary);
+        }
+        .correct {
+            background: rgba(46, 213, 115, 0.2) !important;
+            border-color: #2ed573 !important; color: #2ed573;
+        }
+        .wrong {
+            background: rgba(255, 71, 87, 0.2) !important;
+            border-color: #ff4757 !important; color: #ff4757;
+        }
+
+        /* --- LOADER --- */
+        .loader {
+            width: 50px; height: 50px;
+            border: 4px solid rgba(255,255,255,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
@@ -187,45 +193,54 @@
     <div class="app-container">
         
         <div id="screen-login">
-            <img src="logo.png" alt="Quiz Portal Logo" class="login-logo">
+            <img src="logo.png" alt="Logo" class="login-logo">
+            <h1>Word Quiz Portal</h1>
+            <p>Access the portal to begin your assessment.</p>
             
-            <h1 style="font-size: 32px;">MS Word Quiz</h1>
-            <p>Enter your details to enter the neon realm.</p>
             <input type="text" id="inp-name" placeholder="Full Name">
             <input type="tel" id="inp-phone" placeholder="Phone Number" maxlength="10">
-            <button class="btn" onclick="goToChapters()">Enter ➝</button>
+            <button class="btn" onclick="goToChapters()">Enter Portal ➝</button>
         </div>
 
         <div id="screen-chapters" class="hidden">
-            <h1>Select Topic</h1>
-            <p>Choose a module to generate a quiz.</p>
+            <h1>Select Module</h1>
+            <p>Choose a topic to generate an AI quiz.</p>
             <div class="chapter-grid" id="chapter-list"></div>
-            <button class="btn" id="start-quiz-btn" onclick="startQuiz()" disabled>Initiate AI Quiz ⚡</button>
+            <button class="btn" id="start-quiz-btn" style="margin-top:20px;" onclick="startQuiz()" disabled>Generate Quiz ⚡</button>
         </div>
 
         <div id="screen-loading" class="hidden">
-            <h1 style="text-shadow: none; color: var(--text);">Generating...</h1>
+            <h1 class="pulse">Processing...</h1>
             <div class="loader"></div>
-            <p>AI is synthesizing 20 unique questions about <br><b style="color:var(--primary-neon)" id="loading-topic">Topic</b>.</p>
+            <p>AI is generating 20 questions on<br><b style="color:var(--primary)" id="loading-topic">...</b></p>
         </div>
 
         <div id="screen-quiz" class="hidden">
-            <div style="display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:15px; color:var(--text-muted);">
-                <span id="q-progress">1 / 20</span>
-                <span>Score: <span style="color:var(--primary-neon)" id="live-score">0</span></span>
+            <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
+
+            <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted); margin-bottom:15px; font-weight:700;">
+                <span id="q-progress">Q 1</span>
+                <span>Score: <span style="color:var(--primary)" id="live-score">0</span></span>
             </div>
-            <h2 id="q-text" style="font-size:20px; margin-bottom:25px; font-weight: 600;">Question text...</h2>
+
+            <h2 id="q-text" style="font-size:20px; font-weight:700; margin-bottom:25px; min-height:60px;">Loading Question...</h2>
+            
             <div id="options-container"></div>
-            <button id="next-btn" class="btn hidden" style="margin-top:20px;" onclick="nextQuestion()">Next Question ➝</button>
+            
+            <button id="next-btn" class="btn hidden" style="margin-top:20px; background: var(--primary);" onclick="nextQuestion()">Next Question ➝</button>
         </div>
 
         <div id="screen-result" class="hidden">
-            <h1>Quiz Complete!</h1>
-            <div style="font-size:70px; margin:20px 0; text-shadow: 0 0 20px var(--accent-neon);">💾</div>
-            <p>Your score has been linked to the database.</p>
-            <h2 style="font-size:50px; color:var(--primary-neon); margin:0; text-shadow: var(--text-glow);"><span id="final-score">0</span>/20</h2>
-            <p style="margin-top:5px;">Total Marks</p>
-            <button class="btn" style="margin-top: 20px;" onclick="location.reload()">Take Another Quiz</button>
+            <h1>Assessment Complete</h1>
+            <div style="font-size:80px; margin:20px 0; text-shadow: 0 0 30px var(--primary);">🏆</div>
+            <p>Score successfully uploaded to database.</p>
+            
+            <div style="background:rgba(255,255,255,0.05); padding:20px; border-radius:20px; margin-bottom:20px; border:1px solid var(--glass-border);">
+                <span style="font-size:14px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Final Score</span>
+                <h2 style="font-size:56px; color:var(--primary); margin:0; line-height:1;"><span id="final-score">0</span><span style="font-size:20px; color:var(--text-muted)">/20</span></h2>
+            </div>
+
+            <button class="btn" onclick="location.reload()">Return to Home</button>
         </div>
 
     </div>
@@ -239,7 +254,7 @@
     // ✅ YOUR API KEY
     const API_KEY = "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"; 
 
-    // MS WORD TOPICS
+    // TOPICS
     const chapters = [
         "1. Introduction to Word Processing",
         "2. MS Word Interface",
@@ -272,13 +287,12 @@
         userDetails.name = name;
         userDetails.phone = phone;
 
-        // Render Chapters
         const grid = document.getElementById('chapter-list');
         grid.innerHTML = "";
         chapters.forEach(chap => {
             const btn = document.createElement('div');
             btn.className = 'chapter-btn';
-            btn.innerText = chap;
+            btn.innerHTML = `${chap} <span>➜</span>`;
             btn.onclick = () => selectChapter(btn, chap);
             grid.appendChild(btn);
         });
@@ -302,12 +316,12 @@
         Create exactly 20 Multiple Choice Questions (MCQs) on the topic: "${userDetails.chapter}".
         
         Format: JSON Array of objects. 
-        Each object must have: { "q": "Question text", "options": ["A", "B", "C", "D"], "correct": "Correct Option Text" }
+        Each object: { "q": "Question text", "options": ["A", "B", "C", "D"], "correct": "Correct Option Text" }
         
         IMPORTANT:
         - Questions must be specific to MS Word (2016/2019 versions).
         - If topic is 'Keyboard Shortcuts', focus on Ctrl+ keys.
-        - Do NOT add markdown blocks. Output raw JSON only.`;
+        - JSON ONLY. No markdown.`;
 
         try {
             const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -323,20 +337,17 @@
             const data = await response.json();
             let rawContent = data.choices[0].message.content;
             rawContent = rawContent.replace(/```json/g, "").replace(/```/g, "").trim();
-            
             questions = JSON.parse(rawContent);
             
             if(questions.length > 0) {
                 currentQIndex = 0; score = 0;
                 loadQuestion();
                 switchScreen('screen-quiz');
-            } else {
-                throw new Error("Empty question list");
-            }
+            } else { throw new Error("Empty list"); }
 
         } catch (error) {
             console.error(error);
-            alert("AI Error. Please try again or check API Key.");
+            alert("AI Error. Please check API Key.");
             location.reload();
         }
     }
@@ -344,7 +355,12 @@
     // 3. RUN QUIZ
     function loadQuestion() {
         const q = questions[currentQIndex];
-        document.getElementById('q-progress').innerText = `${currentQIndex + 1} / ${questions.length}`;
+        
+        // Update Progress Bar
+        const progressPercent = ((currentQIndex) / questions.length) * 100;
+        document.getElementById('progress-bar').style.width = `${progressPercent}%`;
+        
+        document.getElementById('q-progress').innerText = `Q ${currentQIndex + 1} / ${questions.length}`;
         document.getElementById('live-score').innerText = score;
         document.getElementById('q-text').innerText = q.q;
         document.getElementById('next-btn').classList.add('hidden');
@@ -386,11 +402,11 @@
         }
     }
 
-    // 4. SUBMIT TO GOOGLE SHEET
+    // 4. SUBMIT & CONFETTI
     function submitScore() {
         switchScreen('screen-loading');
-        document.querySelector('#screen-loading h1').innerText = "Submitting Score...";
-        document.querySelector('#screen-loading p').innerText = "Sending data to Google Sheets...";
+        document.querySelector('#screen-loading h1').innerText = "Finalizing...";
+        document.querySelector('#screen-loading p').innerText = "Saving your victory.";
 
         const payload = {
             name: userDetails.name,
@@ -400,21 +416,23 @@
         };
 
         fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
+            method: 'POST', mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         }).then(() => {
-            document.getElementById('final-score').innerText = score;
-            switchScreen('screen-result');
+            showResult();
         }).catch(err => {
-            alert("Score saved locally (Network Error).");
-            document.getElementById('final-score').innerText = score;
-            switchScreen('screen-result');
+            showResult(); // Show result even if network fails
         });
     }
 
-    // UTILS
+    function showResult() {
+        document.getElementById('final-score').innerText = score;
+        switchScreen('screen-result');
+        // Trigger Confetti
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+    }
+
     function switchScreen(id) {
         document.querySelectorAll('.app-container > div').forEach(div => div.classList.add('hidden'));
         document.getElementById(id).classList.remove('hidden');
