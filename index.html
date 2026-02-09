@@ -2,10 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MS Word Quiz</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
     <style>
         :root {
             --bg-dark: #050505;
@@ -63,8 +65,8 @@
 
         /* --- LOGO STYLING --- */
         .login-logo {
-            width: 440px; /* 100% Bigger */
-            max-width: 100%; /* Mobile safety */
+            width: 440px; 
+            max-width: 100%; 
             margin-bottom: 25px;
             filter: drop-shadow(0 0 15px rgba(0, 242, 234, 0.4));
             transition: transform 0.5s;
@@ -87,6 +89,7 @@
             color: white; font-family: inherit; font-weight: 600;
             box-sizing: border-box; outline: none;
             transition: 0.3s;
+            font-size: 16px !important;
         }
         input:focus {
             border-color: var(--primary);
@@ -104,6 +107,7 @@
             cursor: pointer; position: relative; overflow: hidden;
             transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
             box-shadow: 0 10px 30px rgba(125, 42, 232, 0.3);
+            margin-bottom: 10px;
         }
         .btn:hover {
             transform: translateY(-3px) scale(1.02);
@@ -111,6 +115,27 @@
         }
         .btn:active { transform: scale(0.98); }
         .btn:disabled { filter: grayscale(1); opacity: 0.6; cursor: not-allowed; transform: none; }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+        }
+
+        /* --- TIMER --- */
+        .timer-badge {
+            background: rgba(255, 0, 80, 0.2);
+            border: 1px solid var(--secondary);
+            color: var(--secondary);
+            padding: 8px 16px; border-radius: 20px;
+            font-weight: 800; font-size: 14px;
+            display: inline-block; margin-bottom: 15px;
+            box-shadow: 0 0 10px rgba(255, 0, 80, 0.4);
+        }
 
         /* --- PROGRESS BAR --- */
         .progress-track {
@@ -242,6 +267,9 @@
         </div>
 
         <div id="screen-quiz" class="hidden">
+            
+            <div class="timer-badge">⏱️ Time Left: <span id="timer-display">05:00</span></div>
+
             <div class="progress-track"><div class="progress-fill" id="progress-bar"></div></div>
 
             <div style="display:flex; justify-content:space-between; font-size:14px; color:var(--text-muted); margin-bottom:15px; font-weight:700;">
@@ -266,6 +294,8 @@
                 <h2 style="font-size:56px; color:var(--primary); margin:0; line-height:1;"><span id="final-score">0</span><span style="font-size:20px; color:var(--text-muted)">/20</span></h2>
             </div>
 
+            <button class="btn btn-secondary" onclick="generatePDF()">📄 Download Report</button>
+            
             <button class="btn" onclick="returnToChapters()">Return to Topics</button>
         </div>
 
@@ -298,6 +328,9 @@
     let questions = [];
     let currentQIndex = 0;
     let score = 0;
+    let userAnswers = []; 
+    let timerInterval = null;
+    let timeRemaining = 300; // 5 Minutes
 
     // ---------------- LOGIC ---------------- //
 
@@ -324,7 +357,6 @@
         }
     }
 
-    // Called by "Enter Portal" button (New User)
     function loginAndStart() {
         const name = document.getElementById('inp-name').value;
         const phone = document.getElementById('inp-phone').value;
@@ -363,6 +395,12 @@
     async function startQuiz() {
         switchScreen('screen-loading');
         document.getElementById('loading-topic').innerText = userDetails.chapter;
+        
+        // Reset Variables
+        score = 0;
+        currentQIndex = 0;
+        userAnswers = []; 
+        timeRemaining = 300; // Reset Timer to 5 mins
 
         const systemPrompt = `You are an IT Teacher specializing in Microsoft Word. 
         Create exactly 20 Multiple Choice Questions (MCQs) on the topic: "${userDetails.chapter}".
@@ -392,10 +430,8 @@
             questions = JSON.parse(rawContent);
             
             if(questions.length > 0) {
-                // Reset quiz state
-                currentQIndex = 0; 
-                score = 0;
                 loadQuestion();
+                startTimer(); // Start the clock!
                 switchScreen('screen-quiz');
             } else { throw new Error("Empty list"); }
 
@@ -406,11 +442,34 @@
         }
     }
 
-    // 3. RUN QUIZ
+    // 3. TIMER LOGIC
+    function startTimer() {
+        clearInterval(timerInterval); // Clear any old timers
+        updateTimerDisplay();
+        
+        timerInterval = setInterval(() => {
+            timeRemaining--;
+            updateTimerDisplay();
+            
+            if(timeRemaining <= 0) {
+                clearInterval(timerInterval);
+                alert("⏰ Time's Up! Submitting your quiz.");
+                submitScore(); // Auto-submit
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const minutes = Math.floor(timeRemaining / 60);
+        const seconds = timeRemaining % 60;
+        document.getElementById('timer-display').innerText = 
+            `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+
+    // 4. RUN QUIZ
     function loadQuestion() {
         const q = questions[currentQIndex];
         
-        // Update Progress Bar
         const progressPercent = ((currentQIndex) / questions.length) * 100;
         document.getElementById('progress-bar').style.width = `${progressPercent}%`;
         
@@ -435,6 +494,15 @@
         const allBtns = document.querySelectorAll('.option-btn');
         allBtns.forEach(b => b.disabled = true);
 
+        // Record Answer for PDF
+        const currentQ = questions[currentQIndex];
+        userAnswers.push({
+            question: currentQ.q,
+            selected: selected,
+            correct: correct,
+            isCorrect: (selected === correct)
+        });
+
         if(selected === correct) {
             btn.classList.add('correct');
             score++;
@@ -456,8 +524,9 @@
         }
     }
 
-    // 4. SUBMIT & CONFETTI
+    // 5. SUBMIT & CONFETTI
     function submitScore() {
+        clearInterval(timerInterval); // Stop the clock
         switchScreen('screen-loading');
         document.querySelector('#screen-loading h1').innerText = "Finalizing...";
         document.querySelector('#screen-loading p').innerText = "Saving your progress.";
@@ -476,28 +545,79 @@
         }).then(() => {
             showResult();
         }).catch(err => {
-            showResult(); // Show result even if network fails
+            showResult(); 
         });
     }
 
     function showResult() {
         document.getElementById('final-score').innerText = score;
         switchScreen('screen-result');
-        // Trigger Confetti
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
     }
 
-    // 5. RETURN TO CHAPTERS (No Reload)
+    // 6. PDF GENERATION
+    function generatePDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        const primaryColor = [0, 150, 150]; 
+        const correctColor = [0, 128, 0];   
+        const wrongColor = [200, 0, 0];     
+
+        doc.setFontSize(22);
+        doc.setTextColor(...primaryColor);
+        doc.text("MS Word Quiz Report", 105, 20, null, null, "center");
+        
+        doc.setFontSize(12);
+        doc.setTextColor(50, 50, 50);
+        doc.text(`Student Name: ${userDetails.name}`, 20, 35);
+        doc.text(`Topic: ${userDetails.chapter}`, 20, 42);
+        doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 49);
+        
+        doc.setFontSize(16);
+        doc.setTextColor(...primaryColor);
+        doc.text(`Final Score: ${score} / 20`, 150, 42);
+
+        doc.line(20, 55, 190, 55); 
+
+        let y = 65; 
+
+        userAnswers.forEach((item, index) => {
+            if (y > 270) { 
+                doc.addPage();
+                y = 20;
+            }
+
+            doc.setFontSize(11);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "bold");
+            const qLines = doc.splitTextToSize(`Q${index + 1}. ${item.question}`, 170);
+            doc.text(qLines, 20, y);
+            y += (qLines.length * 6);
+
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+            
+            if(item.isCorrect) {
+                doc.setTextColor(...correctColor);
+                doc.text(`Your Answer: ${item.selected} (Correct)`, 20, y);
+            } else {
+                doc.setTextColor(...wrongColor);
+                doc.text(`Your Answer: ${item.selected} (Wrong)`, 20, y);
+                y += 5;
+                doc.setTextColor(...correctColor);
+                doc.text(`Correct Answer: ${item.correct}`, 20, y);
+            }
+            
+            y += 10; 
+        });
+
+        doc.save(`${userDetails.name}_Quiz_Report.pdf`);
+    }
+
+    // 7. NAVIGATION (FIXED)
     function returnToChapters() {
-        // Reset local variables for a fresh start
-        score = 0;
-        currentQIndex = 0;
-        questions = [];
-        
-        // Go back to chapter screen
         switchScreen('screen-chapters');
-        
-        // Disable "Begin Quiz" button until they pick a new topic
         document.getElementById('start-quiz-btn').disabled = true;
         document.querySelectorAll('.chapter-btn').forEach(b => b.classList.remove('selected'));
     }
